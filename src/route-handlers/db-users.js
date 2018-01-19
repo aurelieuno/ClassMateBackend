@@ -44,7 +44,7 @@ const comparePassword = (studentPassword, hash) => {
 
 // Student Creation/Find
 const findOrCreateStudent = (student) => {
-  sudent.password = hashPassword(student.password);
+  student.password = hashPassword(student.password);
   return db.User.findOrCreate({
     where: {
       username: student.username,

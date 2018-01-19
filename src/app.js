@@ -71,40 +71,9 @@ app.post('/login', (req,res) => {
           expiresIn: 24 * 60 * 60
         });
       
-        let client = new cronofy({
-          access_token: 't5cezkIyHkr2pU-w1c9Q6fneYdhyqu_e',
-        });
-        var options = {
-          tzid: 'Etc/UTC'
-        };
-
-        client.listCalendars(options)
-          .then(function (response) {
-            console.log('calendars available for list');
-            // var calendars = response.calendars;
-          })
-          .catch(err => {
-            console.log(err);
-          });
-    
-        client.readEvents(options)
-          .then(function (response) {
-            console.log('calendar events available');
-            let teacherCalendar = response.events;
-            for(let i=0; i<teacherCalendar.length; i++){
-              if(teacherCalendar[i].organizer.display_name === '5th Grade'){
-                requestedCalendar.push(teacherCalendar[i]);
-              }
-            }
-            sendTeacher(teacher, requestedCalendar);
-            // console.log('teacher calendar is ', teacherCalendar);
-          })
-          .catch(err => {
-            console.log(err);
-          });
-
         userDB.findOrCreateTeacher(userPayload)
           .then((response) => {
+            res.send(response);
             teacher = response;
           })
           .catch(err => {
@@ -113,27 +82,26 @@ app.post('/login', (req,res) => {
       }
     }
   );
-  const sendTeacher = (teach, calendar) => {
-    console.log('teacher is ', teach);
-    console.log('teacher calendar is ', calendar);
-    res.status(201).send({teacherData: teach, calendarData: calendar});
-  }
 });
 
 app.post('/studentLogin', (req,res) => {
-  const student = {username: req.body.userName, password: req.body.password};
+  const student = {username: req.body.username, password: req.body.password};
   userDB.findStudent(student)
     .then(student => res.status(201).send(student))
     .catch(err => console.error(err));
 });
 
 app.post('/studentCreate', (req, res) => {
-  const student = { username: req.body.userName, password: req.body.password };
+  console.log(req.body);
+  const student = req.body;
   userDB.findOrCreateStudent(student)
-    .then(student => res.status(201).send(student))
+    .then(student => {
+      console.log(student);
+      res.status(201).send(student)
+    })
     .catch(err => console.error(err));
 });
-
+////////////////////////////////////////////////////////////=====================================> to test
 app.get('/studentInformation', (req, res) => {
   const studentId = 2;
   userDB.findStudentInfo(studentId)
@@ -161,6 +129,7 @@ app.get('/addClass', (req, res) => {
 // Homework Route ================
 // ===============================
 app.get('/upload', (req, res) => {
+  console.log(req.body);
   res.send(200);
 });
 // ===============================
@@ -187,14 +156,17 @@ app.get('/getAssignment', (req, res) => {
 
 // ===============================
 // Participant Routes ============
-// ===============================
-app.get('/joinClass', (req, res) => {
+// ==============================================================================================================================
+app.post('/joinClass', (req, res) => {
   const participant = {
-    userId: 3,
-    joinCode: 'abc123',
+    userId: req.body.userId,
+    joinCode: req.body.joinCode,
   };
+  console.log(participant);
   participantDB.addParticipant(participant)
-    .then(result => res.status(201).send(result))
+    .then(result => {
+      res.status(201).send(result)
+    })
     .catch(err => console.error(err));
 });
 
