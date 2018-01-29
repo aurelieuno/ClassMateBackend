@@ -23,6 +23,7 @@ const homeworkDB = require('./route-handlers/db-homework.js');
 const emergencyContactDB = require('./route-handlers/db-emergencyContact.js');
 const funStuffDB = require('./route-handlers/db-funstuff.js');
 const calApi = require('./services/calendar.js'); 
+const Expo = require('expo-server-sdk');
 
 const OAuth2 = google.auth.OAuth2;
 const app = express(feathers());
@@ -211,7 +212,7 @@ app.get('/funStuff/:id', (req, res) => {
 app.post('/createEmergencyContact', (req, res) => {
   // console.log(req.body, 'emergency contact info');
   const info = req.body.emergencyContact;
-  const userId = req.body.userId
+  const userId = req.body.userId;
   emergencyContactDB.createEmergencyContact(info, userId)
     .then(results => res.status(201).send(results))
     .catch(err => console.error(err));
@@ -274,6 +275,49 @@ app.post('/classRoster', (req, res) => {
   participantDB.searchParticipants(sessionId)
     .then(roster => res.status(201).send(roster))
     .catch(err => console.error(err)); 
+});
+// /////////////////////////////////////////////////////
+let expo = new Expo();
+
+app.post('/notifications', (req, res) => {
+  const token = req.body.token.value;
+  console.log(token);
+  if (!Expo.isExpoPushToken(token)) {
+    console.error(`Push token ${token} is not a valid Expo push token`);
+  }
+  const message = {
+    to: token,
+    sound: 'default',
+    body: 'This is badge notification, homework',
+    data: { withSome: 'data' },
+  };
+  (async () => {
+    // Send the chunks to the Expo push notification service. There are
+    // different strategies you could use. A simple one is to send one chunk at a
+    // time, which nicely spreads the load out over time:
+    // for (let chunk of chunks) {
+    try {
+      let receipts = await expo.sendPushNotificationsAsync(message);
+      console.log(receipts);
+    } catch (error) {
+      console.error(error);
+    }
+  })();
+  // let chunks = expo.chunkPushNotifications(message);
+
+  // (async () => {
+  //   // Send the chunks to the Expo push notification service. There are
+  //   // different strategies you could use. A simple one is to send one chunk at a
+  //   // time, which nicely spreads the load out over time:
+  //   for (let chunk of chunks) {
+  //     try {
+  //       let receipts = await expo.sendPushNotificationsAsync(chunk);
+  //       console.log(receipts);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
+  // })();
 });
 // ===============================
 
