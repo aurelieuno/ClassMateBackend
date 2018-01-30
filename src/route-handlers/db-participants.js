@@ -68,7 +68,6 @@ const searchParticipants = (sessionId) => {
           const format = [];
           user.forEach(usr => {
             roster.forEach(el => {
-              console.log(el.dataValues.id, 'participantID');
               if (usr.id === el.id_user && !usr.email) {
                 format.push({ id: usr.id, nameFirst: usr.nameFirst, nameLast: usr.nameLast, participantId: el.dataValues.id });
               }

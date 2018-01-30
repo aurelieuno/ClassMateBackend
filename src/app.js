@@ -317,7 +317,6 @@ app.get('/classInfo', (req, res) => {
         .then(participants => {
           const students = [];
           participants.forEach(el => {
-            console.log(el);
             if (!el.email) {
               students.push({ id: el.id, nameFirst: el.nameFirst, nameLast: el.nameLast, participantId: el.participantId });
             }
