@@ -139,8 +139,8 @@ const findStudentInfo = (id) => {
         })
         .then(emergencyContact => {
           const result = emergencyContact.dataValues
-          console.log(student, 'this is student');
-          console.log(emergencyContact, 'this is emergencyContact');
+          // console.log(student, 'this is student');
+          // console.log(emergencyContact, 'this is emergencyContact');
           const format = {
             nameFirst: student.nameFirst,
             nameLast: student.nameLast,

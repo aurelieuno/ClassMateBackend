@@ -181,7 +181,7 @@ app.post('/funStuff/:id', (req, res) => {
     uploadParams.Key = req.files.document.name;
     s3.upload(uploadParams, function (err, data) {
       if (err) {
-        console.log('Error', err);
+        console.log('Error in s3', err);
       } if (data) {
         console.log('Upload Success', data.Location);
         const document = data.Location;
@@ -199,6 +199,14 @@ app.get('/funStuff/:id', (req, res) => {
   const sessionID = req.params.id;
   funStuffDB.findFunStuff(sessionID)
     .then(results => res.status(200).send(results))
+    .catch(err => console.error(err));
+});
+
+app.delete('/deleteFunStuff/:id', (req, res) => {
+  console.log(req.params, 'params')
+  const id = req.params.id;
+  funStuffDB.deleteFunStuff(id)
+    .then(result => res.status(200).send(result))
     .catch(err => console.error(err));
 });
 
@@ -223,7 +231,7 @@ app.post('/createEmergencyContact', (req, res) => {
 // Assignment Routes =============
 // ===============================
 app.post('/createAssignment', (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   const info = {
     sessionId: req.body.sessionId,
     title: req.body.assignment.title,
@@ -308,7 +316,7 @@ app.get('/classInfo', (req, res) => {
         .then(participants => {
           const students = [];
           participants.forEach(el => {
-            console.log(el);
+            // console.log(el);
             if (!el.email) {
               students.push({ id: el.id, nameFirst: el.nameFirst, nameLast: el.nameLast, participantId: el.participantId });
             }
