@@ -22,7 +22,9 @@ const participantDB = require('./route-handlers/db-participants.js');
 const homeworkDB = require('./route-handlers/db-homework.js');
 const emergencyContactDB = require('./route-handlers/db-emergencyContact.js');
 const funStuffDB = require('./route-handlers/db-funstuff.js');
+const badgesDB = require('./route-handlers/db-badges.js');
 const calApi = require('./services/calendar.js'); 
+const Expo = require('expo-server-sdk');
 
 const OAuth2 = google.auth.OAuth2;
 const app = express(feathers());
@@ -196,7 +198,7 @@ app.post('/funStuff/:id', (req, res) => {
     uploadParams.Key = req.files.document.name;
     s3.upload(uploadParams, function (err, data) {
       if (err) {
-        console.error('Error', err);
+        console.log('Error in s3', err);
       } if (data) {
         const document = data.Location;
         funStuffDB.createFunStuff(sessionID, document, typeFinal)
@@ -216,6 +218,14 @@ app.get('/funStuff/:id', (req, res) => {
     .catch(err => console.error(err));
 });
 
+app.delete('/deleteFunStuff/:id', (req, res) => {
+  console.log(req.params, 'params')
+  const id = req.params.id;
+  funStuffDB.deleteFunStuff(id)
+    .then(result => res.status(200).send(result))
+    .catch(err => console.error(err));
+});
+
 // ===============================
 
 // ===============================
@@ -225,7 +235,7 @@ app.get('/funStuff/:id', (req, res) => {
 app.post('/createEmergencyContact', (req, res) => {
   // console.log(req.body, 'emergency contact info');
   const info = req.body.emergencyContact;
-  const userId = req.body.userId
+  const userId = req.body.userId;
   emergencyContactDB.createEmergencyContact(info, userId)
     .then(results => res.status(201).send(results))
     .catch(err => console.error(err));
@@ -289,7 +299,81 @@ app.post('/classRoster', (req, res) => {
 // ===============================
 
 // ===============================
-// Large Routes ===============
+// Notification Routes ===========
+// ===============================
+
+let expo = new Expo();
+
+app.post('/firstNotification', (req, res) => {
+  const {token, userID } = req.body;
+  console.log(req.body);
+  if (!Expo.isExpoPushToken(token)) {
+    console.error(`Push token ${token} is not a valid Expo push token`);
+  }
+  // tokensDB.createtokens(userID, token)
+  //   .then(results => res.status(201).send(results))
+  //   .catch(err => console.error(err));
+});
+
+// need the userid,= to retrive the token notification, query the databse
+app.post('/badgeNotification', (req, res) => {
+  const { userID, className, studentName } = req.body;
+  console.log(req.body);
+  const token = 'ExponentPushToken[GxB8jlM1jM2-yYQ2TfaBTS]';
+  // query the database to get the token associated with the user id
+  // when we have the token id, svae it in const token
+  if (!Expo.isExpoPushToken(token)) {
+    console.error(`Push token ${token} is not a valid Expo push token`);
+  }
+
+  const message = {
+    to: token,
+    sound: 'default',
+    body: `Congratulations ${studentName}, You Got A Badge in ${className}`,
+  };
+  (async () => {
+    try {
+      let receipts = await expo.sendPushNotificationsAsync(message);
+    } catch (error) {
+      console.error(error);
+    }
+    res.send('receipts');
+  })();
+});
+// ===============================
+
+// ===============================
+// Badge Routes ==================
+// ===============================
+// take the student id and the bage type
+app.post('/badges', (req, res) => {
+  const { type, studentID } = req.body;
+  console.log(req.body);
+  res.send(req.body);
+  badgesDB.createbadges(type, studentID)
+    .then(results => res.status(201).send(results))
+    .catch(err => console.error(err));
+});
+
+app.get('/badges', (req, res) => {
+  const { studentID } = req.query;
+  badgesDB.findbadges(studentID)
+    .then(results => res.status(201).send(results))
+    .catch(err => console.error(err));
+});
+
+app.get('/badgeInfo', (req, res) => {
+  badgesDB.allBadges()
+    .then(results => {
+      console.log(results);
+      res.status(200).send(results);
+    })
+    .catch(err => console.error(err));
+});
+// ===============================
+
+// ===============================
+// Large Routes ==================
 // ===============================
 app.get('/dashboard', (req, res) => {
   const userId = req.query.userId;
@@ -317,6 +401,7 @@ app.get('/classInfo', (req, res) => {
         .then(participants => {
           const students = [];
           participants.forEach(el => {
+            // console.log(el);
             if (!el.email) {
               students.push({ id: el.id, nameFirst: el.nameFirst, nameLast: el.nameLast, participantId: el.participantId });
             }

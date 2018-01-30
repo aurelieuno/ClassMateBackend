@@ -37,7 +37,18 @@ const findFunStuff = (sessionId) => {
     .catch(err => console.error(err));
 };
 
+const deleteFunStuff = (id) => {
+  db.FunStuff.destroy({
+    where:{
+      id: id
+    }
+  })
+    .then(result => result)
+    .catch(err => console.error(err));
+};
+
 
 
 module.exports.createFunStuff = createFunStuff;
 module.exports.findFunStuff = findFunStuff;
+module.exports.deleteFunStuff = deleteFunStuff;
