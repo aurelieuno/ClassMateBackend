@@ -22,6 +22,7 @@ const participantDB = require('./route-handlers/db-participants.js');
 const homeworkDB = require('./route-handlers/db-homework.js');
 const emergencyContactDB = require('./route-handlers/db-emergencyContact.js');
 const funStuffDB = require('./route-handlers/db-funstuff.js');
+const badgesDB = require('./route-handlers/db-badges.js');
 const calApi = require('./services/calendar.js'); 
 const Expo = require('expo-server-sdk');
 
@@ -295,7 +296,12 @@ app.post('/classRoster', (req, res) => {
     .then(roster => res.status(201).send(roster))
     .catch(err => console.error(err)); 
 });
-// /////////////////////////////////////////////////////
+// ===============================
+
+// ===============================
+// Notification Routes ===========
+// ===============================
+
 let expo = new Expo();
 
 app.post('/firstNotification', (req, res) => {
@@ -335,14 +341,18 @@ app.post('/badgeNotification', (req, res) => {
   })();
 });
 // ===============================
+
+// ===============================
+// Badge Routes ==================
+// ===============================
 // take the student id and the bage type
 app.post('/badges', (req, res) => {
   const { type, studentID } = req.body;
   console.log(req.body);
   res.send(req.body);
-  // badgesDB.createbadges(type, studentID)
-  //   .then(results => res.status(201).send(results))
-  //   .catch(err => console.error(err));
+  badgesDB.createbadges(type, studentID)
+    .then(results => res.status(201).send(results))
+    .catch(err => console.error(err));
 });
 
 app.get('/badges', (req, res) => {
@@ -350,10 +360,20 @@ app.get('/badges', (req, res) => {
   badgesDB.findbadges(studentID)
     .then(results => res.status(201).send(results))
     .catch(err => console.error(err));
+});
 
+app.get('/badgeInfo', (req, res) => {
+  badgesDB.allBadges()
+    .then(results => {
+      console.log(results);
+      res.status(200).send(results);
+    })
+    .catch(err => console.error(err));
 });
 // ===============================
-// Large Routes ===============
+
+// ===============================
+// Large Routes ==================
 // ===============================
 app.get('/dashboard', (req, res) => {
   const userId = req.query.userId;
