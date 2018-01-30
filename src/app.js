@@ -23,6 +23,7 @@ const homeworkDB = require('./route-handlers/db-homework.js');
 const emergencyContactDB = require('./route-handlers/db-emergencyContact.js');
 const funStuffDB = require('./route-handlers/db-funstuff.js');
 const calApi = require('./services/calendar.js'); 
+const Expo = require('expo-server-sdk');
 
 const OAuth2 = google.auth.OAuth2;
 const app = express(feathers());
@@ -294,8 +295,63 @@ app.post('/classRoster', (req, res) => {
     .then(roster => res.status(201).send(roster))
     .catch(err => console.error(err)); 
 });
-// ===============================
+// /////////////////////////////////////////////////////
+let expo = new Expo();
 
+app.post('/firstNotification', (req, res) => {
+  const {token, userID } = req.body;
+  console.log(req.body);
+  if (!Expo.isExpoPushToken(token)) {
+    console.error(`Push token ${token} is not a valid Expo push token`);
+  }
+  // tokensDB.createtokens(userID, token)
+  //   .then(results => res.status(201).send(results))
+  //   .catch(err => console.error(err));
+});
+
+// need the userid,= to retrive the token notification, query the databse
+app.post('/badgeNotification', (req, res) => {
+  const { userID, className, studentName } = req.body;
+  console.log(req.body);
+  const token = 'ExponentPushToken[GxB8jlM1jM2-yYQ2TfaBTS]';
+  // query the database to get the token associated with the user id
+  // when we have the token id, svae it in const token
+  if (!Expo.isExpoPushToken(token)) {
+    console.error(`Push token ${token} is not a valid Expo push token`);
+  }
+
+  const message = {
+    to: token,
+    sound: 'default',
+    body: `Congratulations ${studentName}, You Got A Badge in ${className}`,
+  };
+  (async () => {
+    try {
+      let receipts = await expo.sendPushNotificationsAsync(message);
+    } catch (error) {
+      console.error(error);
+    }
+    res.send('receipts');
+  })();
+});
+// ===============================
+// take the student id and the bage type
+app.post('/badges', (req, res) => {
+  const { type, studentID } = req.body;
+  console.log(req.body);
+  res.send(req.body);
+  // badgesDB.createbadges(type, studentID)
+  //   .then(results => res.status(201).send(results))
+  //   .catch(err => console.error(err));
+});
+
+app.get('/badges', (req, res) => {
+  const { studentID } = req.query;
+  badgesDB.findbadges(studentID)
+    .then(results => res.status(201).send(results))
+    .catch(err => console.error(err));
+
+});
 // ===============================
 // Large Routes ===============
 // ===============================
