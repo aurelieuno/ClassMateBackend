@@ -291,44 +291,50 @@ app.post('/classRoster', (req, res) => {
 let expo = new Expo();
 
 app.post('/firstNotification', (req, res) => {
-  const token = req.body.token.value;
-  console.log(token);
+  const {token, userID } = req.body;
+  console.log(req.body);
   if (!Expo.isExpoPushToken(token)) {
     console.error(`Push token ${token} is not a valid Expo push token`);
   }
-  tokensDB.createtokens(userID, token)
-    .then(results => res.status(201).send(results))
-    .catch(err => console.error(err));
+  // tokensDB.createtokens(userID, token)
+  //   .then(results => res.status(201).send(results))
+  //   .catch(err => console.error(err));
 });
 
-app.post('/badgeNotifications', (req, res) => {
-  const token = req.body.token.value;
-  console.log(token);
+// need the userid,= to retrive the token notification, query the databse
+app.post('/badgeNotification', (req, res) => {
+  const { userID, className, studentName } = req.body;
+  console.log(req.body);
+  const token = 'ExponentPushToken[GxB8jlM1jM2-yYQ2TfaBTS]';
+  // query the database to get the token associated with the user id
+  // when we have the token id, svae it in const token
   if (!Expo.isExpoPushToken(token)) {
     console.error(`Push token ${token} is not a valid Expo push token`);
   }
+
   const message = {
     to: token,
     sound: 'default',
-    body: 'You Got A Badge in class',
-    data: { withSome: 'data' },
+    body: `Congratulations ${studentName}, You Got A Badge in ${className}`,
   };
   (async () => {
     try {
       let receipts = await expo.sendPushNotificationsAsync(message);
-      console.log(receipts);
     } catch (error) {
       console.error(error);
     }
+    res.send('receipts');
   })();
 });
 // ===============================
 // take the student id and the bage type
 app.post('/badges', (req, res) => {
   const { type, studentID } = req.body;
-  badgesDB.createbadges(type, studentID)
-    .then(results => res.status(201).send(results))
-    .catch(err => console.error(err));
+  console.log(req.body);
+  res.send(req.body);
+  // badgesDB.createbadges(type, studentID)
+  //   .then(results => res.status(201).send(results))
+  //   .catch(err => console.error(err));
 });
 
 app.get('/badges', (req, res) => {
