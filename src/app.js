@@ -22,6 +22,7 @@ const participantDB = require('./route-handlers/db-participants.js');
 const homeworkDB = require('./route-handlers/db-homework.js');
 const emergencyContactDB = require('./route-handlers/db-emergencyContact.js');
 const funStuffDB = require('./route-handlers/db-funstuff.js');
+const badgesDB = require('./route-handlers/db-badges.js');
 const calApi = require('./services/calendar.js'); 
 const Expo = require('expo-server-sdk');
 
@@ -197,7 +198,7 @@ app.post('/funStuff/:id', (req, res) => {
     uploadParams.Key = req.files.document.name;
     s3.upload(uploadParams, function (err, data) {
       if (err) {
-        console.error('Error', err);
+        console.log('Error in s3', err);
       } if (data) {
         const document = data.Location;
         funStuffDB.createFunStuff(sessionID, document, typeFinal)
@@ -214,6 +215,14 @@ app.get('/funStuff/:id', (req, res) => {
   const sessionID = req.params.id;
   funStuffDB.findFunStuff(sessionID)
     .then(results => res.status(200).send(results))
+    .catch(err => console.error(err));
+});
+
+app.delete('/deleteFunStuff/:id', (req, res) => {
+  console.log(req.params, 'params')
+  const id = req.params.id;
+  funStuffDB.deleteFunStuff(id)
+    .then(result => res.status(200).send(result))
     .catch(err => console.error(err));
 });
 
@@ -287,7 +296,12 @@ app.post('/classRoster', (req, res) => {
     .then(roster => res.status(201).send(roster))
     .catch(err => console.error(err)); 
 });
-// /////////////////////////////////////////////////////
+// ===============================
+
+// ===============================
+// Notification Routes ===========
+// ===============================
+
 let expo = new Expo();
 
 app.post('/firstNotification', (req, res) => {
@@ -327,14 +341,18 @@ app.post('/badgeNotification', (req, res) => {
   })();
 });
 // ===============================
+
+// ===============================
+// Badge Routes ==================
+// ===============================
 // take the student id and the bage type
 app.post('/badges', (req, res) => {
   const { type, studentID } = req.body;
   console.log(req.body);
   res.send(req.body);
-  // badgesDB.createbadges(type, studentID)
-  //   .then(results => res.status(201).send(results))
-  //   .catch(err => console.error(err));
+  badgesDB.createbadges(type, studentID)
+    .then(results => res.status(201).send(results))
+    .catch(err => console.error(err));
 });
 
 app.get('/badges', (req, res) => {
@@ -342,10 +360,20 @@ app.get('/badges', (req, res) => {
   badgesDB.findbadges(studentID)
     .then(results => res.status(201).send(results))
     .catch(err => console.error(err));
+});
 
+app.get('/badgeInfo', (req, res) => {
+  badgesDB.allBadges()
+    .then(results => {
+      console.log(results);
+      res.status(200).send(results);
+    })
+    .catch(err => console.error(err));
 });
 // ===============================
-// Large Routes ===============
+
+// ===============================
+// Large Routes ==================
 // ===============================
 app.get('/dashboard', (req, res) => {
   const userId = req.query.userId;
@@ -373,7 +401,7 @@ app.get('/classInfo', (req, res) => {
         .then(participants => {
           const students = [];
           participants.forEach(el => {
-            console.log(el);
+            // console.log(el);
             if (!el.email) {
               students.push({ id: el.id, nameFirst: el.nameFirst, nameLast: el.nameLast, participantId: el.participantId });
             }
