@@ -97,18 +97,33 @@ app.post('/login', (req,res) => {
   );
 });
 
+app.post('/studentLogin', (req, res) => {
+  const student = req.body;
+  userDB.findStudent(student)
+    .then(dbLoginResult => {
+      if (dbLoginResult === 'user not found') {
+        res.send('user not found');
+      }else if(dbLoginResult === 'incorrect password'){
+        res.send('incorrect password');
+      }else{
+        res.send(dbLoginResult.dataValues);
+      }
+    })
+    .catch(err => {
+      console.error('findStudent error: ', err);
+    });
+});
+
 app.post('/studentCreate', (req, res) => {
   const student = req.body;
   userDB.findOrCreateStudent(student)
     .then(student => {
-      // console.log(student);
       res.status(201).send(student);
     })
     .catch(err => console.error(err));
 });
 
 app.get('/studentInformation', (req, res) => {
-  const tempStudentId = 2;
   const studentId = req.query.id;
   userDB.findStudentInfo(studentId)
     .then(result => res.status(201).send(result))
@@ -182,9 +197,8 @@ app.post('/funStuff/:id', (req, res) => {
     uploadParams.Key = req.files.document.name;
     s3.upload(uploadParams, function (err, data) {
       if (err) {
-        console.log('Error', err);
+        console.error('Error', err);
       } if (data) {
-        console.log('Upload Success', data.Location);
         const document = data.Location;
         funStuffDB.createFunStuff(sessionID, document, typeFinal)
           .then(result => result)
@@ -219,12 +233,9 @@ app.post('/createEmergencyContact', (req, res) => {
 });
 
 // ===============================
-
-// ===============================
 // Assignment Routes =============
 // ===============================
 app.post('/createAssignment', (req, res) => {
-  console.log(req.body);
   const info = {
     sessionId: req.body.sessionId,
     title: req.body.assignment.title,
@@ -279,7 +290,18 @@ app.post('/classRoster', (req, res) => {
 // /////////////////////////////////////////////////////
 let expo = new Expo();
 
-app.post('/notifications', (req, res) => {
+app.post('/firstNotification', (req, res) => {
+  const token = req.body.token.value;
+  console.log(token);
+  if (!Expo.isExpoPushToken(token)) {
+    console.error(`Push token ${token} is not a valid Expo push token`);
+  }
+  tokensDB.createtokens(userID, token)
+    .then(results => res.status(201).send(results))
+    .catch(err => console.error(err));
+});
+
+app.post('/badgeNotifications', (req, res) => {
   const token = req.body.token.value;
   console.log(token);
   if (!Expo.isExpoPushToken(token)) {
@@ -288,14 +310,10 @@ app.post('/notifications', (req, res) => {
   const message = {
     to: token,
     sound: 'default',
-    body: 'This is badge notification, homework',
+    body: 'You Got A Badge in class',
     data: { withSome: 'data' },
   };
   (async () => {
-    // Send the chunks to the Expo push notification service. There are
-    // different strategies you could use. A simple one is to send one chunk at a
-    // time, which nicely spreads the load out over time:
-    // for (let chunk of chunks) {
     try {
       let receipts = await expo.sendPushNotificationsAsync(message);
       console.log(receipts);
@@ -303,24 +321,23 @@ app.post('/notifications', (req, res) => {
       console.error(error);
     }
   })();
-  // let chunks = expo.chunkPushNotifications(message);
-
-  // (async () => {
-  //   // Send the chunks to the Expo push notification service. There are
-  //   // different strategies you could use. A simple one is to send one chunk at a
-  //   // time, which nicely spreads the load out over time:
-  //   for (let chunk of chunks) {
-  //     try {
-  //       let receipts = await expo.sendPushNotificationsAsync(chunk);
-  //       console.log(receipts);
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   }
-  // })();
 });
 // ===============================
+// take the student id and the bage type
+app.post('/badges', (req, res) => {
+  const { type, studentID } = req.body;
+  badgesDB.createbadges(type, studentID)
+    .then(results => res.status(201).send(results))
+    .catch(err => console.error(err));
+});
 
+app.get('/badges', (req, res) => {
+  const { studentID } = req.query;
+  badgesDB.findbadges(studentID)
+    .then(results => res.status(201).send(results))
+    .catch(err => console.error(err));
+
+});
 // ===============================
 // Large Routes ===============
 // ===============================
@@ -331,8 +348,6 @@ app.get('/dashboard', (req, res) => {
       // console.log('sessionInfo: ', sessionInfo);
       calApi.getCalendar(sessionInfo)
         .then((formattedCalendar) => {
-          console.log(formattedCalendar, 'this is formattedCalendar');
-          // console.log('formatted calendar: ', formattedCalendar);
           const reformat = {
             sessionInfo,
             formattedCalendar
@@ -352,8 +367,9 @@ app.get('/classInfo', (req, res) => {
         .then(participants => {
           const students = [];
           participants.forEach(el => {
+            console.log(el);
             if (!el.email) {
-              students.push({ id: el.id, nameFirst: el.nameFirst, nameLast: el.nameLast, gradeLevel: el.gradeLevel, photoUrl: el.photoUrl, id_emergencyContact: el.id_emergencyContact });
+              students.push({ id: el.id, nameFirst: el.nameFirst, nameLast: el.nameLast, participantId: el.participantId });
             }
           });
           const format = {
