@@ -96,18 +96,33 @@ app.post('/login', (req,res) => {
   );
 });
 
+app.post('/studentLogin', (req, res) => {
+  const student = req.body;
+  userDB.findStudent(student)
+    .then(dbLoginResult => {
+      if (dbLoginResult === 'user not found') {
+        res.send('user not found');
+      }else if(dbLoginResult === 'incorrect password'){
+        res.send('incorrect password');
+      }else{
+        res.send(dbLoginResult.dataValues);
+      }
+    })
+    .catch(err => {
+      console.error('findStudent error: ', err);
+    });
+});
+
 app.post('/studentCreate', (req, res) => {
   const student = req.body;
   userDB.findOrCreateStudent(student)
     .then(student => {
-      // console.log(student);
       res.status(201).send(student);
     })
     .catch(err => console.error(err));
 });
 
 app.get('/studentInformation', (req, res) => {
-  const tempStudentId = 2;
   const studentId = req.query.id;
   userDB.findStudentInfo(studentId)
     .then(result => res.status(201).send(result))
@@ -183,7 +198,6 @@ app.post('/funStuff/:id', (req, res) => {
       if (err) {
         console.log('Error in s3', err);
       } if (data) {
-        console.log('Upload Success', data.Location);
         const document = data.Location;
         funStuffDB.createFunStuff(sessionID, document, typeFinal)
           .then(result => result)
@@ -219,19 +233,16 @@ app.delete('/deleteFunStuff/:id', (req, res) => {
 app.post('/createEmergencyContact', (req, res) => {
   // console.log(req.body, 'emergency contact info');
   const info = req.body.emergencyContact;
-  const userId = req.body.userId
+  const userId = req.body.userId;
   emergencyContactDB.createEmergencyContact(info, userId)
     .then(results => res.status(201).send(results))
     .catch(err => console.error(err));
 });
 
 // ===============================
-
-// ===============================
 // Assignment Routes =============
 // ===============================
 app.post('/createAssignment', (req, res) => {
-  // console.log(req.body);
   const info = {
     sessionId: req.body.sessionId,
     title: req.body.assignment.title,
@@ -295,8 +306,6 @@ app.get('/dashboard', (req, res) => {
       // console.log('sessionInfo: ', sessionInfo);
       calApi.getCalendar(sessionInfo)
         .then((formattedCalendar) => {
-          console.log(formattedCalendar, 'this is formattedCalendar');
-          // console.log('formatted calendar: ', formattedCalendar);
           const reformat = {
             sessionInfo,
             formattedCalendar
