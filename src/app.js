@@ -302,11 +302,9 @@ app.post('/firstNotification', (req, res) => {
 // need the userid,= to retrive the token notification, query the databse
 app.post('/badgeNotification', (req, res) => {
   const { userId, className, studentName, teacherName } = req.body;
-  console.log(req.body);
   tokenDB.findToken(userId)
     .then(result => {
       const token = result.pushToken;
-      console.log(token);
       if (!Expo.isExpoPushToken(token)) {
         console.error(`Push token ${token} is not a valid Expo push token`);
       }
