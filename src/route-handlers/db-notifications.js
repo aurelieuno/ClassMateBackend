@@ -13,10 +13,10 @@ const createToken = (userId, token) => {
 const findToken = (userId) => {
   return db.user_notification.findAll({
     where:{
-      id_participant: userId
+      id_user: userId
     }
   })
-    .then(result => console.log(result, 'result in findToken'))
+    .then(result => result[0].dataValues)
     .catch(err => console.error(err));
 };
 

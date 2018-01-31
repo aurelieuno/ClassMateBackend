@@ -317,13 +317,14 @@ app.post('/firstNotification', (req, res) => {
 });
 
 // need the userid,= to retrive the token notification, query the databse
-app.post('/badgeNotification', (req, res) => {
+app.get('/badgeNotification', (req, res) => {
   const { userID, className, studentName } = req.body;
   console.log(req.body);
-  const token = 'ExponentPushToken[GxB8jlM1jM2-yYQ2TfaBTS]';
-  tokenDB.findToken(userID)
+  const tempID = 43;
+  // const token = 'ExponentPushToken[GxB8jlM1jM2-yYQ2TfaBTS]';
+  tokenDB.findToken(tempID)
     .then(result => {
-      console.log(result, 'result in findToken')
+      const token = result.pushToken;
       if (!Expo.isExpoPushToken(token)) {
         console.error(`Push token ${token} is not a valid Expo push token`);
       }
