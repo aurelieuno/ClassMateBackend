@@ -22,6 +22,7 @@ const participantDB = require('./route-handlers/db-participants.js');
 const homeworkDB = require('./route-handlers/db-homework.js');
 const emergencyContactDB = require('./route-handlers/db-emergencyContact.js');
 const funStuffDB = require('./route-handlers/db-funstuff.js');
+const tokenDB = require('./route-handlers/db-notifications.js');
 const badgesDB = require('./route-handlers/db-badges.js');
 const calApi = require('./services/calendar.js'); 
 const Expo = require('expo-server-sdk');
@@ -310,9 +311,9 @@ app.post('/firstNotification', (req, res) => {
   if (!Expo.isExpoPushToken(token)) {
     console.error(`Push token ${token} is not a valid Expo push token`);
   }
-  // tokensDB.createtokens(userID, token)
-  //   .then(results => res.status(201).send(results))
-  //   .catch(err => console.error(err));
+  tokenDB.createToken(userID, token)
+    .then(results => res.status(201).send(results))
+    .catch(err => console.error(err));
 });
 
 // need the userid,= to retrive the token notification, query the databse
@@ -320,25 +321,28 @@ app.post('/badgeNotification', (req, res) => {
   const { userID, className, studentName } = req.body;
   console.log(req.body);
   const token = 'ExponentPushToken[GxB8jlM1jM2-yYQ2TfaBTS]';
-  // query the database to get the token associated with the user id
-  // when we have the token id, svae it in const token
-  if (!Expo.isExpoPushToken(token)) {
-    console.error(`Push token ${token} is not a valid Expo push token`);
-  }
-
-  const message = {
-    to: token,
-    sound: 'default',
-    body: `Congratulations ${studentName}, You Got A Badge in ${className}`,
-  };
-  (async () => {
-    try {
-      let receipts = await expo.sendPushNotificationsAsync(message);
-    } catch (error) {
-      console.error(error);
-    }
-    res.send('receipts');
-  })();
+  tokenDB.findToken(userID)
+    .then(result => {
+      console.log(result, 'result in findToken')
+      if (!Expo.isExpoPushToken(token)) {
+        console.error(`Push token ${token} is not a valid Expo push token`);
+      }
+    
+      const message = {
+        to: token,
+        sound: 'default',
+        body: `Congratulations ${studentName}, You Got A Badge in ${className}`,
+      };
+      (async () => {
+        try {
+          let receipts = await expo.sendPushNotificationsAsync(message);
+        } catch (error) {
+          console.error(error);
+        }
+        res.send('receipts');
+      })();
+    })
+    .catch(err => console.error(err));
 });
 // ===============================
 
@@ -347,17 +351,19 @@ app.post('/badgeNotification', (req, res) => {
 // ===============================
 // take the student id and the bage type
 app.post('/badges', (req, res) => {
-  const { type, studentID } = req.body;
-  console.log(req.body);
-  res.send(req.body);
-  badgesDB.createbadges(type, studentID)
-    .then(results => res.status(201).send(results))
+  const { badgeId, studentId } = req.body;
+  console.log(req.body, 'body of /badges');
+  badgesDB.createBadges(badgeId, studentId)
+    .then(results => {
+      console.log(results.dataValues, 'results from badges');
+      res.status(201).send(results.dataValues);
+    })
     .catch(err => console.error(err));
 });
 
 app.get('/badges', (req, res) => {
   const { studentID } = req.query;
-  badgesDB.findbadges(studentID)
+  badgesDB.findBadges(studentID)
     .then(results => res.status(201).send(results))
     .catch(err => console.error(err));
 });

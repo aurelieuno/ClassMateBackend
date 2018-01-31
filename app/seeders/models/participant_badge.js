@@ -1,16 +1,15 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-  const Participant_Badge = sequelize.define('Participant_Badge', {
+  var Participant_Badge = sequelize.define('Participant_Badge', {
     message: DataTypes.STRING,
-    dateEarned: DataTypes.DATE
+    id_participant: DataTypes.INTEGER,
+    id_badge: DataTypes.INTEGER
+  }, {
+    classMethods: {
+      associate: function(models) {
+        // associations can be defined here
+      }
+    }
   });
-  Participant_Badge.associate = (models) => {
-    Participant_Badge.belongsTo(models.Badge, {
-      foreignKey: 'id_badge',
-    });
-    Participant_Badge.belongsTo(models.Participant, {
-      foreignKey: 'id_participant'
-    });
-  };
   return Participant_Badge;
 };
