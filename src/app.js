@@ -317,12 +317,12 @@ app.post('/firstNotification', (req, res) => {
 });
 
 // need the userid,= to retrive the token notification, query the databse
-app.get('/badgeNotification', (req, res) => {
+app.post('/badgeNotification', (req, res) => {
   const { userID, className, studentName } = req.body;
   console.log(req.body);
-  const tempID = 43;
+  // const tempID = 43;
   // const token = 'ExponentPushToken[GxB8jlM1jM2-yYQ2TfaBTS]';
-  tokenDB.findToken(tempID)
+  tokenDB.findToken(userID)
     .then(result => {
       const token = result.pushToken;
       if (!Expo.isExpoPushToken(token)) {
