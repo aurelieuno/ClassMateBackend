@@ -306,19 +306,17 @@ let expo = new Expo();
 
 app.post('/firstNotification', (req, res) => {
   const {token, userID } = req.body;
-  console.log(req.body);
   if (!Expo.isExpoPushToken(token)) {
     console.error(`Push token ${token} is not a valid Expo push token`);
   }
-  // tokensDB.createtokens(userID, token)
-  //   .then(results => res.status(201).send(results))
-  //   .catch(err => console.error(err));
+  tokensDB.createtokens(userID, token)
+    .then(results => res.status(201).send(results))
+    .catch(err => console.error(err));
 });
 
 // need the userid,= to retrive the token notification, query the databse
 app.post('/badgeNotification', (req, res) => {
   const { userID, className, studentName } = req.body;
-  console.log(req.body);
   const token = 'ExponentPushToken[GxB8jlM1jM2-yYQ2TfaBTS]';
   // query the database to get the token associated with the user id
   // when we have the token id, svae it in const token
