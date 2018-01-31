@@ -290,20 +290,20 @@ app.post('/classRoster', (req, res) => {
 let expo = new Expo();
 
 app.post('/firstNotification', (req, res) => {
-  const {token, userID } = req.body;
+  const { token, userID } = req.body;
   if (!Expo.isExpoPushToken(token)) {
     console.error(`Push token ${token} is not a valid Expo push token`);
   }
-  tokensDB.createtokens(userID, token)
+  tokenDB.createToken(userID, token)
     .then(results => res.status(201).send(results))
     .catch(err => console.error(err));
 });
 
 // need the userid,= to retrive the token notification, query the databse
 app.post('/badgeNotification', (req, res) => {
-  const { userID, className, studentName } = req.body;
+  const { userId, className, studentName, teacherName } = req.body;
   console.log(req.body);
-  tokenDB.findToken(userID)
+  tokenDB.findToken(userId)
     .then(result => {
       const token = result.pushToken;
       console.log(token);
@@ -314,7 +314,7 @@ app.post('/badgeNotification', (req, res) => {
       const message = {
         to: token,
         sound: 'default',
-        body: `Congratulations ${studentName}, You Got A Badge in ${className}`,
+        body: `Congratulations ${studentName}, You Got A Badge in ${className} by teacher ${teacherName}`,
       };
       (async () => {
         try {
@@ -335,6 +335,7 @@ app.post('/badgeNotification', (req, res) => {
 // take the student id and the bage type
 app.post('/badges', (req, res) => {
   const { badgeId, studentId } = req.body;
+  // console.log(req.body);
   badgesDB.createBadges(badgeId, studentId)
     .then(results => {
       res.status(201).send(results.dataValues);
