@@ -169,7 +169,6 @@ app.post('/upload/:participantId/:assignmentID', (req, res) => {
       res.status(400).send(err);
     } else {
       const photoUrl = photo.url;
-      // console.log(photo.url); 
       homeworkDB.uploadHomework(participantId, assignmentID, photoUrl)
         .then(result => res.status(201).send(result))
         .catch(err => console.error(err));
@@ -199,7 +198,7 @@ app.post('/funStuff/:id', (req, res) => {
     uploadParams.Key = req.files.document.name;
     s3.upload(uploadParams, function (err, data) {
       if (err) {
-        console.log('Error in s3', err);
+        console.error('Error in s3', err);
       } if (data) {
         const document = data.Location;
         funStuffDB.createFunStuff(sessionID, document, typeFinal)
@@ -220,7 +219,7 @@ app.get('/funStuff/:id', (req, res) => {
 });
 
 app.delete('/deleteFunStuff/:id', (req, res) => {
-  console.log(req.params, 'params')
+  // console.log(req.params, 'params')
   const id = req.params.id;
   funStuffDB.deleteFunStuff(id)
     .then(result => res.status(200).send(result))
@@ -307,7 +306,7 @@ let expo = new Expo();
 
 app.post('/firstNotification', (req, res) => {
   const {token, userID } = req.body;
-  console.log(req.body);
+  // console.log(req.body);
   if (!Expo.isExpoPushToken(token)) {
     console.error(`Push token ${token} is not a valid Expo push token`);
   }
@@ -319,7 +318,7 @@ app.post('/firstNotification', (req, res) => {
 // need the userid,= to retrive the token notification, query the databse
 app.get('/badgeNotification', (req, res) => {
   const { userID, className, studentName } = req.body;
-  console.log(req.body);
+  // console.log(req.body);
   const tempID = 43;
   // const token = 'ExponentPushToken[GxB8jlM1jM2-yYQ2TfaBTS]';
   tokenDB.findToken(tempID)
@@ -353,10 +352,10 @@ app.get('/badgeNotification', (req, res) => {
 // take the student id and the bage type
 app.post('/badges', (req, res) => {
   const { badgeId, studentId } = req.body;
-  console.log(req.body, 'body of /badges');
+  // console.log(req.body, 'body of /badges');
   badgesDB.createBadges(badgeId, studentId)
     .then(results => {
-      console.log(results.dataValues, 'results from badges');
+      // console.log(results.dataValues, 'results from badges');
       res.status(201).send(results.dataValues);
     })
     .catch(err => console.error(err));
@@ -372,7 +371,7 @@ app.get('/badges', (req, res) => {
 app.get('/badgeInfo', (req, res) => {
   badgesDB.allBadges()
     .then(results => {
-      console.log(results);
+      // console.log(results);
       res.status(200).send(results);
     })
     .catch(err => console.error(err));
