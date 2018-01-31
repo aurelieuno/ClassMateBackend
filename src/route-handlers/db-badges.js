@@ -2,10 +2,10 @@ const Sequelize = require('sequelize');
 const db = require('../../app/seeders/db.js');
 
 // Create Badges
-const createBadges = (info) => {
-  db.Participant_Badge.create({
-    id_badge: info.badgeId,
-    id_participant: info.participantId,
+const createBadges = (badgeId, participantId) => {
+  return db.Participant_Badge.create({
+    id_participant: participantId,
+    id_badge: badgeId,
   })
     .then(result => {
       console.log(result);
@@ -29,7 +29,7 @@ const allBadges = () => {
 };
 
 const findBadges = (id) => {
-  db.Participant_Badge.findAll({
+  return db.Participant_Badge.findAll({
     where: {
       id_participant: id,
     },

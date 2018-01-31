@@ -11,22 +11,11 @@ module.exports = {
       message: {
         type: Sequelize.STRING
       },
-      dateEarned: {
-        type: Sequelize.DATE
+      id_participant: {
+        type: Sequelize.INTEGER
       },
       id_badge: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'Badges',
-          key: 'id',
-        },
-      },
-      id_participant: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'Participants',
-          key: 'id',
-        },
+        type: Sequelize.INTEGER
       },
       createdAt: {
         allowNull: false,
